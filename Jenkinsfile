@@ -19,7 +19,7 @@ pipeline {
     stages {
         stage('Clean Workspace') {
             steps {
-                deleteDir()  // Clean up the workspace before checkout
+                deleteDir()
             }
         }
         stage('Checkout Code') {
@@ -56,6 +56,13 @@ pipeline {
                         sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         sh "docker push ${DOCKER_IMAGE_NAME}"
                     }
+                }
+            }
+        }
+        stage('Start Minikube') {
+            steps {
+                script {
+                    sh 'minikube start'
                 }
             }
         }
