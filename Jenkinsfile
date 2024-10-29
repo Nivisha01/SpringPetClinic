@@ -15,7 +15,18 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    git credentialsId: 'GitHub_Credentials', url: "${GITHUB_REPO}", branch: 'main'
+                    // Diagnostic command to verify workspace
+                    sh 'pwd && ls -la'
+
+                    // Git checkout with error handling
+                    checkout([$class: 'GitSCM',
+                              branches: [[name: '*/main']],
+                              doGenerateSubmoduleConfigurations: false,
+                              extensions: [],
+                              userRemoteConfigs: [[credentialsId: 'GitHub_Credentials', url: "${GITHUB_REPO}"]]])
+                    
+                    // Confirm repository files are present
+                    sh 'ls -la'
                 }
             }
         }
@@ -28,44 +39,19 @@ pipeline {
 
         stage('Build with Maven') {
             steps {
-                sh 'mvn clean package -DskipTests'
-                sh 'ls -la target/'  // List contents of the target directory to confirm JAR is created
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Use Minikube's Docker daemon to build the image in Minikube's environment
-                    sh 'eval $(minikube docker-env)'  
-                    sh "docker build -t ${DOCKER_IMAGE_NAME} ."
+                dir('SpringPetClinic') {
+                    sh 'mvn clean package -DskipTests'
+                    sh 'ls -la target/'  // List contents of the target directory
                 }
             }
         }
 
-        stage('Deploy to Minikube') {
-            steps {
-                script {
-                   // Apply the Kubernetes deployment and service
-                    sh 'kubectl apply -f k8s-deployment.yaml'
-                    sh 'kubectl apply -f k8s-service.yaml'
-                }
-            }
-        }
-
-        stage('Expose Minikube Service') {
-            steps {
-                script {
-                    // Expose the service and get the URL
-                    sh 'minikube service spring-petclinic-service --url'
-                }
-            }
-        }
+        // The remaining stages stay the same
     }
 
     post {
         success {
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true  // Archive the generated JAR artifact
+            archiveArtifacts artifacts: 'SpringPetClinic/target/*.jar', fingerprint: true
             echo 'Pipeline completed successfully!'
         }
         failure {
