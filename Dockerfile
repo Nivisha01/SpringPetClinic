@@ -1,14 +1,11 @@
-# Use an official Java runtime as a parent image
+# Use a base image with JRE
 FROM openjdk:11-jre-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the Maven-built JAR file into the container at /app
-COPY target/petclinic-0.0.1-SNAPSHOT.jar petclinic.jar
+# Copy the Maven-built JAR file into the container
+COPY target/spring-petclinic-2.1.0.BUILD-SNAPSHOT.jar petclinic.jar
 
-# Run the jar file
-ENTRYPOINT ["java", "-jar", "petclinic.jar"]
-
-# Expose the port the app runs on
-EXPOSE 8080
+# Run the JAR file
+CMD ["java", "-jar", "petclinic.jar"]
