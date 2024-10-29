@@ -47,11 +47,12 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
+                    // Log in to Docker Hub using provided credentials
                     docker.withRegistry('https://index.docker.io/v1/', 'DockerHub_Cred') {
-                        def artifactPath = "target/shopping-cart-0.0.1-SNAPSHOT.war"
-                        // Build the Docker image using the WAR file
+                        // Build the Docker image using the Dockerfile located in the 'docker' directory
                         sh "docker build -t ${DOCKER_IMAGE_NAME} -f docker/Dockerfile ."
-                        // Push the Docker image to the registry
+                        
+                        // Push the Docker image to the Docker registry
                         sh "docker push ${DOCKER_IMAGE_NAME}"
                     }
                 }
