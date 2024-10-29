@@ -60,7 +60,9 @@ pipeline {
         stage('Prepare for Deployment') {
             steps {
                 script {
-                    // Verifying that the deployment file is present
+                    // Set Minikube context explicitly
+                    sh 'kubectl config use-context minikube'
+                    // Verify that the deployment file is present
                     sh 'ls -la ${WORKSPACE}'
                     // Display current Kubernetes context and cluster info
                     sh 'kubectl config current-context'
@@ -74,6 +76,10 @@ pipeline {
                     // Applying the deployment and service YAML to Kubernetes
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-deployment.yaml --validate=false'
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-service.yaml --validate=false'
+                    // Display status of deployments, pods, and services for debugging
+                    sh 'kubectl get deployments'
+                    sh 'kubectl get pods'
+                    sh 'kubectl get services'
                 }
             }
         }
