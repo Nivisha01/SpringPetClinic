@@ -41,6 +41,11 @@ pipeline {
                 }
             }
         }
+        stage('Debug') {
+            steps {
+                sh 'ls -la'  // List files in the workspace for debugging
+            }
+        }
         stage('Docker Build') {
             steps {
                 script {
