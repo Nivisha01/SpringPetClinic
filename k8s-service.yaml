@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-pet-clinic-service  # Updated service name
+spec:
+  selector:
+    app: spring-pet-clinic  # Updated selector to match the deployment labels
+  type: NodePort  
+  ports:
+    - protocol: TCP
+      port: 8070       # Port that the service will expose
+      targetPort: 8070 # Port on the container
+      nodePort: 30007  # Port to expose on the nodes
