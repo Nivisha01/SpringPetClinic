@@ -19,21 +19,18 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    // Checkout code from GitHub repository using credentials
                     git credentialsId: 'GitHub_Credentials', url: "${GITHUB_REPO}", branch: 'main'
                 }
             }
         }
         stage('Build with Maven') {
             steps {
-                // Build the project and create the artifact
                 sh 'mvn clean package -DskipTests'
             }
         }
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    // Run SonarQube analysis
                     sh """
                         mvn sonar:sonar \
                         -Dmaven.test.skip=true \
@@ -47,12 +44,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Log in to Docker Hub using provided credentials
                     docker.withRegistry('https://index.docker.io/v1/', 'DockerHub_Cred') {
-                        // Build the Docker image using the Dockerfile located in the 'docker' directory
                         sh "docker build -t ${DOCKER_IMAGE_NAME} -f docker/Dockerfile ."
-                        
-                        // Push the Docker image to the Docker registry
                         sh "docker push ${DOCKER_IMAGE_NAME}"
                     }
                 }
@@ -61,7 +54,6 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Apply Kubernetes deployment and service configuration
                     sh 'kubectl apply -f k8s-deployment.yaml'
                     sh 'kubectl apply -f k8s-service.yaml'
                 }
@@ -70,13 +62,14 @@ pipeline {
     }
     post {
         success {
+            // Archive the WAR file
+            archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             echo 'Pipeline completed successfully!'
         }
         failure {
             echo 'Pipeline failed.'
         }
         always {
-            // Cleanup or notification
             echo 'Cleaning up...'
         }
     }
