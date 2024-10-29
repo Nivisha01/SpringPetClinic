@@ -50,6 +50,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
+                    // Switch Docker to Minikube environment
+                        sh 'eval $(minikube -p minikube docker-env)'
                     docker.withRegistry('https://index.docker.io/v1/', 'DockerHub_Cred') {
                         sh "docker build -t ${DOCKER_IMAGE_NAME} ."
                         sh "docker push ${DOCKER_IMAGE_NAME}"
@@ -60,6 +62,8 @@ pipeline {
         stage('Prepare for Deployment') {
             steps {
                 script {
+                    // Set KUBECONFIG environment variable for Jenkins
+                    sh 'export KUBECONFIG=$HOME/.kube/config'
                     // Set Minikube context explicitly
                     sh 'kubectl config use-context minikube'
                     // Verify that the deployment file is present
