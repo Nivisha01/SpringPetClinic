@@ -45,7 +45,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'DockerHub_Cred') {
-                        sh "docker build -t ${DOCKER_IMAGE_NAME} -f docker/Dockerfile ."
+                        sh "docker build -t ${DOCKER_IMAGE_NAME} ."
                         sh "docker push ${DOCKER_IMAGE_NAME}"
                     }
                 }
