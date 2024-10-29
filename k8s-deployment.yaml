@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-pet-clinic-deployment  # Updated deployment name
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spring-pet-clinic  # Updated label to match the app name
+  template:
+    metadata:
+      labels:
+        app: spring-pet-clinic  # Updated label to match the app name
+    spec:
+      containers:
+        - name: spring-pet-clinic-container  # Updated container name for clarity
+          image: nivisha/my-app:latest  
+          ports:
+            - containerPort: 8070  # Ensure this matches the exposed port of your application
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "256Mi"  # Minimum memory requested by the container
+              cpu: "500m"      # Minimum CPU requested by the container
+            limits:
+              memory: "512Mi"  # Maximum memory the container can use
+              cpu: "1"         # Maximum CPU the container can use
