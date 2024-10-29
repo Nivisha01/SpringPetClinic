@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'  
+        maven 'Maven'
         jdk 'JDK17'
     }
 
@@ -10,7 +10,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'nivisha/my-app:latest'
         GITHUB_REPO = 'https://github.com/Nivisha01/SpringPetClinic.git'
         SONARQUBE_SERVER = 'http://44.196.180.172:9000/'
-        SONARQUBE_TOKEN = credentials('sonar-token') 
+        SONARQUBE_TOKEN = credentials('sonar-token')
         PROJECT_NAME = 'project-Ekart'
         SONAR_HOST_URL = "${SONARQUBE_SERVER}"
     }
@@ -23,9 +23,15 @@ pipeline {
                 }
             }
         }
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()  // Clean up the workspace before checkout
+            }
+        }
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean package -DskipTests'
+                sh 'ls -la target/'  // List contents of the target directory
             }
         }
         stage('SonarQube Analysis') {
@@ -39,11 +45,6 @@ pipeline {
                         -Dsonar.login=${SONARQUBE_TOKEN}
                     """
                 }
-            }
-        }
-        stage('Debug') {
-            steps {
-                sh 'ls -la'  // List files in the workspace for debugging
             }
         }
         stage('Docker Build') {
@@ -67,8 +68,8 @@ pipeline {
     }
     post {
         success {
-            // Archive the WAR file
-            archiveArtifacts artifacts: 'target/*.war', fingerprint: true
+            // Archive the artifact file
+            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true  // Change to .war if necessary
             echo 'Pipeline completed successfully!'
         }
         failure {
