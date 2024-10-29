@@ -57,9 +57,21 @@ pipeline {
                 }
             }
         }
+        stage('Prepare for Deployment') {
+            steps {
+                script {
+                    // Verifying that the deployment file is present
+                    sh 'ls -la ${WORKSPACE}'
+                    // Display current Kubernetes context and cluster info
+                    sh 'kubectl config current-context'
+                    sh 'kubectl cluster-info'
+                }
+            }
+        }
         stage('Deploy to Kubernetes') {
             steps {
                 script {
+                    // Applying the deployment and service YAML to Kubernetes
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-deployment.yaml --validate=false'
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-service.yaml --validate=false'
                 }
