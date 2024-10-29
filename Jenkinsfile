@@ -1,6 +1,11 @@
-
 pipeline {
     agent any
+
+    tools {
+        maven 'Maven'  
+        jdk 'JDK17'
+    }
+
     environment {
         DOCKER_IMAGE_NAME = 'nivisha/my-app:latest'
         GITHUB_REPO = 'https://github.com/Nivisha01/SpringPetClinic.git'
@@ -9,6 +14,7 @@ pipeline {
         PROJECT_NAME = 'project-Ekart'
         SONAR_HOST_URL = "${SONARQUBE_SERVER}"
     }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -67,6 +73,10 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed.'
+        }
+        always {
+            // Cleanup or notification
+            echo 'Cleaning up...'
         }
     }
 }
