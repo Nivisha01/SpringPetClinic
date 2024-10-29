@@ -13,6 +13,7 @@ pipeline {
         SONARQUBE_TOKEN = credentials('sonar-token')
         PROJECT_NAME = 'project-SpringPetClinic'
         SONAR_HOST_URL = "${SONARQUBE_SERVER}"
+        DOCKER_CREDENTIALS_ID = 'DockerHub_Cred'
     }
 
     stages {
@@ -31,7 +32,6 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean package -DskipTests'
-                sh 'ls -la target/'  // List contents of the target directory
             }
         }
         stage('SonarQube Analysis') {
@@ -50,14 +50,10 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    // Set up Minikube Docker environment
-                    sh 'eval $(minikube -p minikube docker-env) || exit 1'
-        
-                    // Build the Docker image
                     sh "docker build -t ${DOCKER_IMAGE_NAME} ."
-            
-                    // Authenticate and push the Docker image to DockerHub
-                    docker.withRegistry('https://index.docker.io/v1/', 'DockerHub_Cred') {
+
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         sh "docker push ${DOCKER_IMAGE_NAME}"
                     }
                 }
@@ -66,36 +62,26 @@ pipeline {
         stage('Debug Minikube Environment') {
             steps {
                 script {
-                    // Print Minikube status and environment for troubleshooting
                     sh 'minikube status'
                     sh 'minikube ip'
                     sh 'kubectl config current-context'
-                    sh 'docker info'
                 }
             }
         }
         stage('Prepare for Deployment') {
             steps {
                 script {
-                    // Set KUBECONFIG environment variable for Jenkins
                     sh 'export KUBECONFIG=$HOME/.kube/config'
-                    // Set Minikube context explicitly
                     sh 'kubectl config use-context minikube || exit 1'
-                    // Verify that the deployment files are present
                     sh 'ls -la ${WORKSPACE}'
-                    // Display current Kubernetes context and cluster info
-                    sh 'kubectl config current-context'
-                    sh 'kubectl cluster-info'
                 }
             }
         }
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Apply the deployment and service YAML files to Kubernetes
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-deployment.yaml --validate=false'
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-service.yaml --validate=false'
-                    // Display the status of deployments, pods, and services for debugging
                     sh 'kubectl get deployments'
                     sh 'kubectl get pods'
                     sh 'kubectl get services'
@@ -105,7 +91,6 @@ pipeline {
     }
     post {
         success {
-            // Archive the artifact file
             archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             echo 'Pipeline completed successfully!'
         }
