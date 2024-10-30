@@ -1,21 +1,25 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:5.7
     ports:
-      - "8081:3306"  # Exposing MySQL on port 8081
+      - "8081:3306"  # Exposing MySQL on port 8081 for local access (Spring uses 3306 internally)
     environment:
       - MYSQL_ROOT_PASSWORD=petclinic
       - MYSQL_DATABASE=petclinic
+      - MYSQL_USER=user          # Consistent MySQL user
+      - MYSQL_PASSWORD=user      # Consistent MySQL password
     volumes:
       - "./conf.d:/etc/mysql/conf.d:ro"
 
   spring-petclinic:
-    image: nivisha/my-app:latest  # Replace with your Docker Hub image
+    image: nivisha/my-app:latest
     ports:
       - "8082:8080"  # Exposing the Spring app on port 8082
     depends_on:
       - mysql
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/petclinic
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=petclinic
+      - SPRING_DATASOURCE_USERNAME=user    # Matching the MySQL user
+      - SPRING_DATASOURCE_PASSWORD=user    # Matching the MySQL password
