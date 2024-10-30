@@ -14,7 +14,7 @@ services:
   spring-petclinic:
     build:
       context: .  # Adjust if your Dockerfile is in a different directory
-      dockerfile: docker/Dockerfile  # Path to your Dockerfile
+      dockerfile: Dockerfile  # Path to your Dockerfile
     ports:
       - "8082:8080"  # Exposing the Spring app on port 8082
     depends_on:
