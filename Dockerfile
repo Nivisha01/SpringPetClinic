@@ -12,3 +12,5 @@ EXPOSE 8080
 
 # Run the application with the MySQL profile enabled
 CMD ["java", "-Dspring.profiles.active=mysql", "-jar", "petclinic.jar"]
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl --fail http://localhost:8080/manage/health || exit 1
