@@ -12,9 +12,7 @@ services:
       - "./conf.d:/etc/mysql/conf.d:ro"
 
   spring-petclinic:
-    build:
-      context: .  # Adjust if your Dockerfile is in a different directory
-      dockerfile: Dockerfile  # Path to your Dockerfile
+    image: nivisha/my-app:latest
     ports:
       - "8082:8080"  # Exposing the Spring app on port 8082
     depends_on:
