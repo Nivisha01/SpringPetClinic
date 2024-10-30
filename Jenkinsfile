@@ -59,6 +59,20 @@ pipeline {
                 }
             }
         }
+        stage('Stop and Remove Existing Containers') {
+            steps {
+                script {
+                    sh "docker-compose down || true"
+                }
+            }
+        }
+        stage('Run Docker Compose') {
+            steps {
+                script {
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
         stage('Start Minikube') {
             steps {
                 script {
@@ -84,11 +98,19 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Kubernetes') {
+        stage('Deploy MySQL to Kubernetes') {
+            steps {
+                script {
+                    sh 'kubectl apply -f ${WORKSPACE}/k8s-mysql-deployment.yaml --validate=false'
+                    sleep 15 // Wait for MySQL to be ready
+                    sh 'kubectl get pods -l app=mysql'
+                }
+            }
+        }
+        stage('Deploy Spring Pet Clinic to Kubernetes') {
             steps {
                 script {
                     sh 'kubectl apply -f ${WORKSPACE}/k8s-deployment.yaml --validate=false'
-                    sh 'kubectl apply -f ${WORKSPACE}/k8s-service.yaml --validate=false'
                     sh 'kubectl get deployments'
                     sh 'kubectl get pods'
                     sh 'kubectl get services'
