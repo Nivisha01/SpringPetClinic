@@ -69,7 +69,12 @@ pipeline {
         stage('Run Docker Compose') {
             steps {
                 script {
-                    sh 'docker-compose up -d'
+                    sh 'docker-compose down || true'
+                    sh 'docker-compose up -d --build'
+                    sleep 20
+                    sh 'docker ps -a'
+                    sh 'docker logs petclinic-mysql' // Logs MySQL
+                    sh 'docker logs petclinic-spring-petclinic' // Logs Spring Petclinic app
                 }
             }
         }
