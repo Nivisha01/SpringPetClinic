@@ -1,27 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-pet-clinic-deployment  # Updated deployment name
+  name: spring-petclinic
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: spring-pet-clinic  # Updated label to match the app name
+      app: spring-petclinic
   template:
     metadata:
       labels:
-        app: spring-pet-clinic  # Updated label to match the app name
+        app: spring-petclinic
     spec:
       containers:
-        - name: spring-pet-clinic-container  # Updated container name for clarity
-          image: nivisha/my-app:latest  
+        - name: spring-petclinic
+          image: nivisha/my-app:latest
           ports:
-            - containerPort: 8070  # Ensure this matches the exposed port of your application
-          imagePullPolicy: Always
-          resources:
-            requests:
-              memory: "256Mi"  # Minimum memory requested by the container
-              cpu: "500m"      # Minimum CPU requested by the container
-            limits:
-              memory: "512Mi"  # Maximum memory the container can use
-              cpu: "1"         # Maximum CPU the container can use
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "mysql"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql-service:3306/petclinic"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "user"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "user"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-petclinic-service
+spec:
+  selector:
+    app: spring-petclinic
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
